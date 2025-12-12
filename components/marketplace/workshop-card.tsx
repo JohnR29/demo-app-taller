@@ -36,19 +36,19 @@ export function WorkshopCard({ workshop, onSchedule }: WorkshopCardProps) {
 
   return (
     <Card className="min-w-0 overflow-hidden transition-shadow hover:shadow-lg">
-      <div className="space-y-3 p-3 sm:space-y-4 sm:p-4">
+      <div className="space-y-2 p-2 sm:space-y-3 sm:p-3">
         {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1">
+          <div className="flex items-start justify-between gap-1.5">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-bold text-foreground sm:text-base">{workshop.name}</h3>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h3 className="truncate text-xs font-bold text-foreground sm:text-sm">{workshop.name}</h3>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1 sm:gap-1.5">
                 <RatingStars rating={workshop.rating} size="sm" showValue />
                 <span className="text-xs text-muted-foreground">({workshop.reviewCount})</span>
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-base font-bold text-primary sm:text-lg">{workshop.distance} km</div>
+              <div className="text-sm font-bold text-primary sm:text-base">{workshop.distance} km</div>
               <span className={workshop.isOpen ? "text-xs font-medium text-success" : "text-xs text-muted-foreground"}>
                 {workshop.isOpen ? "Abierto" : "Cerrado"}
               </span>
@@ -57,28 +57,28 @@ export function WorkshopCard({ workshop, onSchedule }: WorkshopCardProps) {
         </div>
 
         {/* Address */}
-        <div className="flex items-start gap-2 text-xs text-muted-foreground sm:text-sm">
-          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+        <div className="flex items-start gap-1.5 text-xs text-muted-foreground sm:text-xs">
+          <MapPin className="mt-0.5 h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
           <span className={isExpanded ? "" : "line-clamp-1"}>{workshop.address}</span>
         </div>
 
         {/* Specialties */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1.5">
-            {(isExpanded ? workshop.specialties : workshop.specialties.slice(0, 3)).map((specialty) => (
+        <div className="space-y-1">
+          <div className="flex flex-wrap gap-1">
+            {(isExpanded ? workshop.specialties : workshop.specialties.slice(0, 2)).map((specialty) => (
               <SpecialtyTag key={specialty} label={specialty} size="sm" />
             ))}
-            {!isExpanded && workshop.specialties.length > 3 && (
-              <span className="flex h-6 items-center px-2 text-xs text-muted-foreground">
-                +{workshop.specialties.length - 3} más
+            {!isExpanded && workshop.specialties.length > 2 && (
+              <span className="flex h-5 items-center px-1.5 text-xs text-muted-foreground">
+                +{workshop.specialties.length - 2}
               </span>
             )}
           </div>
 
-          {workshop.specialties.length > 3 && (
+          {workshop.specialties.length > 2 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10 active:bg-primary/20"
+              className="flex w-full items-center justify-center gap-0.5 rounded px-1 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10 active:bg-primary/20"
             >
               {isExpanded ? (
                 <>
@@ -86,7 +86,7 @@ export function WorkshopCard({ workshop, onSchedule }: WorkshopCardProps) {
                 </>
               ) : (
                 <>
-                  Ver todas las especialidades <ChevronDown className="h-3 w-3" />
+                  Ver más <ChevronDown className="h-3 w-3" />
                 </>
               )}
             </button>
@@ -94,24 +94,24 @@ export function WorkshopCard({ workshop, onSchedule }: WorkshopCardProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <Button
             variant="outline"
             size="sm"
-            className={`min-h-[44px] flex-1 transition-all ${
+            className={`min-h-[36px] flex-1 text-xs transition-all ${
               isCallingPressed ? "scale-95 bg-muted" : "bg-transparent hover:bg-accent active:scale-95"
             }`}
             asChild
           >
             <a href={`tel:${workshop.phone}`} onClick={handleCall}>
-              <Phone className="mr-1.5 h-3.5 w-3.5 sm:mr-2" />
-              <span className="text-xs sm:text-sm">Llamar</span>
+              <Phone className="mr-1 h-3 w-3 sm:mr-1.5" />
+              <span>Llamar</span>
             </a>
           </Button>
-          <Button size="sm" className="min-h-[44px] flex-1 hover:opacity-90 active:scale-95" asChild>
-            <Link href={`/marketplace/${workshop.id}`}>
-              <span className="text-xs sm:text-sm">Ver Detalle</span>
-              <ChevronRight className="ml-1.5 h-3.5 w-3.5 sm:ml-2" />
+          <Button size="sm" className="min-h-[36px] flex-1 text-xs hover:opacity-90 active:scale-95" asChild>
+            <Link href={`/portal/buscar-talleres`}>
+              <span>Detalle</span>
+              <ChevronRight className="ml-1 h-3 w-3 sm:ml-1.5" />
             </Link>
           </Button>
         </div>

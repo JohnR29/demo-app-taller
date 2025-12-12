@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { BranchSelector } from "./branch-selector"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
@@ -26,8 +27,8 @@ const navItems = [
   { href: "/ordenes", icon: ClipboardList, label: "Órdenes de Trabajo" },
   { href: "/inventario", icon: Package, label: "Inventario" },
   { href: "/clientes", icon: UserCircle, label: "Clientes" },
-  { href: "/marketplace", icon: Store, label: "Marketplace" },
   { href: "/perfil-publico", icon: Globe, label: "Mi Perfil Público" },
+  { href: "/sucursales", icon: Store, label: "Sucursales" },
   { href: "/usuarios", icon: Users, label: "Usuarios" },
   { href: "/configuracion", icon: Settings, label: "Configuración" },
 ]
@@ -112,6 +113,13 @@ export function Sidebar({ mobile = false, onNavigate }: SidebarProps) {
           )
         })}
       </nav>
+
+      {/* Selector de Sucursales */}
+      {!collapsed && (
+        <div className="border-t border-sidebar-border p-3">
+          <BranchSelector />
+        </div>
+      )}
 
       <div className="border-t border-sidebar-border p-2">
         <Button

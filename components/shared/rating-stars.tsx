@@ -25,7 +25,7 @@ export function RatingStars({ rating, maxRating = 5, size = "md", showValue = fa
   }
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("flex items-center gap-0.5", className)}>
       {Array.from({ length: maxRating }, (_, i) => {
         const isFilled = i < Math.floor(rating)
         const isHalf = i < rating && i >= Math.floor(rating)
@@ -45,7 +45,7 @@ export function RatingStars({ rating, maxRating = 5, size = "md", showValue = fa
         )
       })}
       {showValue && (
-        <span className={cn("ml-1 font-semibold text-foreground", textSizeClasses[size])}>{rating.toFixed(1)}</span>
+        <span className={cn("ml-0.5 font-semibold text-foreground", textSizeClasses[size])}>{rating.toFixed(1)}</span>
       )}
     </div>
   )

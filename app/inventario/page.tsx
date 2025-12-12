@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { AppLayout } from "@/components/layout/app-layout"
 import { InventoryList } from "@/components/inventory/inventory-list"
 import { InventoryFilter } from "@/components/inventory/inventory-filter"
-import { Plus, ScanBarcode } from "lucide-react"
+import { Plus, ScanBarcode, Camera, Upload, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -16,10 +17,26 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { uploadImage } from "@/lib/upload-image"
+import { useBranch } from "@/contexts/branch-context"
+import { mockInventoryWithBranches } from "@/lib/mock-data-branches"
+import { designTokens } from "@/lib/design-tokens"
+import { cn } from "@/lib/utils"
+
 
 export default function InventarioPage() {
+  const { selectedBranchId, currentBranch, isGlobalView } = useBranch()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  // Para foto del producto
+  const [fotoUrl, setFotoUrl] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Filtrar inventario por sucursal
+  const filteredInventory = isGlobalView
+    ? mockInventoryWithBranches
+    : mockInventoryWithBranches.filter(i => i.branchId === selectedBranchId)
 
   const handleScan = () => {
     setIsScanning(true)
@@ -29,13 +46,36 @@ export default function InventarioPage() {
     }, 1500)
   }
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setUploading(true)
+      const url = await uploadImage(file)
+      setFotoUrl(url)
+      setUploading(false)
+    }
+  }
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-4xl space-y-4 p-4 md:p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Inventario</h1>
-            <p className="text-sm text-muted-foreground">Gestiona repuestos y stock</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground">Inventario</h1>
+              {!isGlobalView && currentBranch && (
+                <Badge variant="outline" className="gap-1">
+                  <MapPin className={cn(designTokens.icon.xs)} />
+                  {currentBranch.code}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {isGlobalView 
+                ? `${filteredInventory.length} productos en todas las sucursales`
+                : `${filteredInventory.length} productos en ${currentBranch?.name}`
+              }
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-2 bg-transparent" onClick={handleScan}>
@@ -55,6 +95,40 @@ export default function InventarioPage() {
                   <DialogDescription>Ingresa los datos del nuevo repuesto al inventario.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
+                  {/* Foto del producto (opcional) */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <img
+                        src={fotoUrl || "/placeholder.svg"}
+                        alt="Foto del producto"
+                        className="h-20 w-20 rounded-lg object-cover border bg-secondary"
+                        style={{ objectFit: "cover" }}
+                      />
+                      <button
+                        type="button"
+                        className="absolute bottom-1 right-1 rounded-full bg-background p-1 shadow hover:bg-secondary"
+                        onClick={() => fileInputRef.current?.click()}
+                        aria-label="Cambiar foto"
+                        disabled={uploading}
+                        style={{ lineHeight: 0 }}
+                      >
+                        {uploading ? (
+                          <Upload className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Camera className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground">Foto del producto (opcional)</span>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="sku">SKU / Código</Label>
                     <Input id="sku" placeholder="ACE-001" className="bg-secondary font-mono" />
