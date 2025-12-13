@@ -81,7 +81,8 @@ CREATE TABLE IF NOT EXISTS public.vehicles (
     updated_at TIMESTAMPTZ DEFAULT now(),
     
     -- Constraints
-    CONSTRAINT vehicles_license_plate_unique UNIQUE (license_plate),
+    -- License plate should be unique per organization, not globally
+    -- We use a partial unique index below instead of a table constraint
     CONSTRAINT vehicles_year_check CHECK (year >= 1900 AND year <= EXTRACT(YEAR FROM CURRENT_DATE) + 1),
     CONSTRAINT vehicles_mileage_check CHECK (mileage >= 0)
 );
@@ -105,6 +106,14 @@ CREATE INDEX idx_vehicles_license_plate ON public.vehicles(license_plate);
 CREATE INDEX idx_vehicles_brand_model ON public.vehicles(brand, model);
 CREATE INDEX idx_vehicles_is_active ON public.vehicles(is_active) WHERE is_active = true;
 CREATE INDEX idx_vehicles_next_service ON public.vehicles(next_service_date) WHERE next_service_date IS NOT NULL;
+
+-- Unique constraint for license plate per organization (not globally)
+-- This ensures the same license plate can exist in different organizations
+CREATE UNIQUE INDEX idx_vehicles_license_plate_per_org ON public.vehicles(license_plate, (
+    SELECT organization_id 
+    FROM public.clients 
+    WHERE clients.id = vehicles.client_id
+)) WHERE is_active = true;
 
 -- ============================================================================
 -- 4. CREATE TRIGGERS

@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     
     -- Constraints
     CONSTRAINT organizations_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'),
-    CONSTRAINT organizations_rut_format CHECK (rut ~* '^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$')
+    CONSTRAINT organizations_rut_format CHECK (rut ~* '^\d{7,8}-[\dkK]$' OR rut ~* '^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$')
 );
 
 -- Branches (Sucursales)

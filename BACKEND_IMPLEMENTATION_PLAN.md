@@ -76,12 +76,13 @@ Implementar completamente el backend de la aplicación TallerMS utilizando Supab
 
 ### Roles de Usuario Identificados
 
-- **owner**: Dueño de la organización
-- **admin**: Administrador global (acceso a todas las sucursales)
+- **admin**: Administrador global (acceso a todas las sucursales, equivalente a owner)
 - **manager**: Gerente de sucursal (acceso a su sucursal)
 - **mechanic**: Mecánico (visualiza y actualiza OT asignadas)
 - **receptionist**: Recepcionista (gestiona citas y clientes)
 - **viewer**: Solo lectura
+
+*Nota: El rol de "owner" se implementa usando el rol "admin" con permisos completos en la organización.*
 
 ## 🗄️ Modelo de Datos Propuesto
 

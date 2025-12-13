@@ -171,17 +171,45 @@ CREATE POLICY "Admins can manage branch permissions"
 -- ============================================================================
 
 -- Function to create user profile automatically when auth user is created
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+-- Note: This function will be called from the application after user signup
+-- The application must provide organization_id and other required fields
+CREATE OR REPLACE FUNCTION public.create_user_profile(
+    p_user_id UUID,
+    p_organization_id UUID,
+    p_email TEXT,
+    p_first_name TEXT,
+    p_last_name TEXT,
+    p_role public.user_role DEFAULT 'viewer',
+    p_default_branch_id UUID DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+    v_user_id UUID;
 BEGIN
-    -- This will be called after signup
-    -- The organization_id and other details should be set via the application
-    RETURN NEW;
+    INSERT INTO public.users (
+        id,
+        organization_id,
+        email,
+        first_name,
+        last_name,
+        role,
+        default_branch_id
+    ) VALUES (
+        p_user_id,
+        p_organization_id,
+        p_email,
+        p_first_name,
+        p_last_name,
+        p_role,
+        p_default_branch_id
+    )
+    RETURNING id INTO v_user_id;
+    
+    RETURN v_user_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger on auth.users (if we want automatic profile creation)
--- Note: This requires additional setup in Supabase Auth hooks
+-- Note: Call this function from application after Supabase Auth signup
 
 -- Function to check if user has access to a branch
 CREATE OR REPLACE FUNCTION public.user_has_branch_access(

@@ -12,8 +12,8 @@ Las migraciones deben ejecutarse en orden numérico. **No omitir ninguna migraci
 1. ✅ `001_create_organizations_and_branches.sql` - Organizaciones y Sucursales
 2. ✅ `002_create_users_and_permissions.sql` - Usuarios y Permisos
 
-### Fase 2: Gestión de Clientes (Pendiente)
-3. `003_create_clients_and_vehicles.sql` - Clientes y Vehículos
+### Fase 2: Gestión de Clientes
+3. ✅ `003_create_clients_and_vehicles.sql` - Clientes y Vehículos
 
 ### Fase 3: Operaciones (Pendiente)
 4. `004_create_work_orders.sql` - Órdenes de Trabajo
