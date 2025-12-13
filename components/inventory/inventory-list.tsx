@@ -1,130 +1,67 @@
 "use client"
 
-import { Package, AlertTriangle, TrendingDown, TrendingUp, Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
+import { Package, AlertTriangle, TrendingUp, Eye, MapPin } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-
-interface InventoryItem {
-  id: string
-  sku: string
-  nombre: string
-  categoria: string
-  stockActual: number
-  stockMinimo: number
-  precio: number
-  ultimoMovimiento: string
-  visiblePortal: boolean
-}
-
-const mockInventory: InventoryItem[] = [
-  {
-    id: "1",
-    sku: "ACE-001",
-    nombre: "Aceite Motor 5W-30 Mobil",
-    categoria: "Aceites",
-    stockActual: 24,
-    stockMinimo: 10,
-    precio: 15000,
-    ultimoMovimiento: "Hoy",
-    visiblePortal: true,
-  },
-  {
-    id: "2",
-    sku: "FIL-023",
-    nombre: "Filtro de Aceite Toyota",
-    categoria: "Filtros",
-    stockActual: 3,
-    stockMinimo: 5,
-    precio: 8500,
-    ultimoMovimiento: "Ayer",
-    visiblePortal: true,
-  },
-  {
-    id: "3",
-    sku: "FIL-045",
-    nombre: "Filtro de Aire K&N Universal",
-    categoria: "Filtros",
-    stockActual: 8,
-    stockMinimo: 5,
-    precio: 12000,
-    ultimoMovimiento: "Hace 2 días",
-    visiblePortal: true,
-  },
-  {
-    id: "4",
-    sku: "BUJ-112",
-    nombre: "Bujía NGK Iridium",
-    categoria: "Eléctricos",
-    stockActual: 2,
-    stockMinimo: 8,
-    precio: 12000,
-    ultimoMovimiento: "Hace 3 días",
-    visiblePortal: false,
-  },
-  {
-    id: "5",
-    sku: "PAD-089",
-    nombre: "Pastillas de Freno Brembo",
-    categoria: "Frenos",
-    stockActual: 6,
-    stockMinimo: 4,
-    precio: 45000,
-    ultimoMovimiento: "Hace 1 semana",
-    visiblePortal: true,
-  },
-  {
-    id: "6",
-    sku: "ACE-002",
-    nombre: "Aceite Transmisión ATF",
-    categoria: "Aceites",
-    stockActual: 0,
-    stockMinimo: 5,
-    precio: 22000,
-    ultimoMovimiento: "Hace 2 semanas",
-    visiblePortal: false,
-  },
-  {
-    id: "7",
-    sku: "BAT-001",
-    nombre: "Batería Bosch 12V 60Ah",
-    categoria: "Eléctricos",
-    stockActual: 4,
-    stockMinimo: 3,
-    precio: 95000,
-    ultimoMovimiento: "Ayer",
-    visiblePortal: true,
-  },
-]
+import { InventoryDetailModal } from "./inventory-detail-modal"
+import { useBranch } from "@/contexts/branch-context"
+import { mockInventoryWithBranches } from "@/lib/mock-data-branches"
+import { designTokens } from "@/lib/design-tokens"
 
 export function InventoryList() {
+  const { selectedBranchId, isGlobalView } = useBranch()
+  const [selected, setSelected] = useState<typeof mockInventoryWithBranches[0] | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  
+  // Filtrar inventario por sucursal
+  const inventory = isGlobalView
+    ? mockInventoryWithBranches
+    : mockInventoryWithBranches.filter(i => i.branchId === selectedBranchId)
+
+  const handleOpenDetail = (item: typeof mockInventoryWithBranches[0]) => {
+    setSelected(item)
+    setModalOpen(true)
+  }
+
+  const handleSave = (updated: typeof mockInventoryWithBranches[0]) => {
+    // En producción: actualizar vía API
+    setModalOpen(false)
+  }
+
   return (
     <div className="space-y-2">
       {/* Desktop Header - hidden on mobile */}
       <div className="hidden rounded-lg bg-secondary p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground lg:grid lg:grid-cols-12 lg:gap-4">
-        <div className="col-span-4">Producto</div>
-        <div className="col-span-2 text-center">Stock</div>
-        <div className="col-span-2 text-right">Precio</div>
-        <div className="col-span-2 text-center">Portal</div>
-        <div className="col-span-2 text-right">Último Mov.</div>
+        <div className="lg:col-span-4">Producto</div>
+        {isGlobalView && <div className="lg:col-span-1">Sucursal</div>}
+        <div className={cn("lg:text-center", isGlobalView ? "lg:col-span-2" : "lg:col-span-2")}>Stock</div>
+        <div className={cn("lg:text-right", isGlobalView ? "lg:col-span-2" : "lg:col-span-2")}>Precio</div>
+        <div className={cn("lg:text-center", isGlobalView ? "lg:col-span-1" : "lg:col-span-2")}>Portal</div>
+        <div className={cn("lg:text-right", isGlobalView ? "lg:col-span-2" : "lg:col-span-2")}>Último Mov.</div>
       </div>
 
       {/* Items */}
-      {mockInventory.map((item) => {
-        const isLowStock = item.stockActual <= item.stockMinimo
-        const isOutOfStock = item.stockActual === 0
+      {inventory.map((item) => {
+        const isLowStock = item.stock <= item.minStock
+        const isOutOfStock = item.stock === 0
 
         return (
-          <div
+          <button
             key={item.id}
+            type="button"
             className={cn(
-              "rounded-lg border bg-card p-3 transition-colors hover:bg-secondary",
-              "lg:grid lg:grid-cols-12 lg:items-center lg:gap-4",
+              "w-full text-left rounded-lg border bg-card p-3 transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary/40",
+              "lg:grid lg:items-center lg:gap-4",
+              isGlobalView ? "lg:grid-cols-13" : "lg:grid-cols-12",
               isOutOfStock && "border-destructive/30",
               isLowStock && !isOutOfStock && "border-warning/30",
             )}
+            onClick={() => handleOpenDetail(item)}
+            aria-label={`Ver detalle de ${item.name}`}
           >
             {/* Product Info */}
-            <div className="lg:col-span-4">
+            <div className={isGlobalView ? "lg:col-span-4" : "lg:col-span-4"}>
               <div className="flex items-start gap-3">
                 <div
                   className={cn(
@@ -139,20 +76,29 @@ export function InventoryList() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{item.nombre}</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">{item.sku}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {item.categoria}
-                    </Badge>
+                  <p className="truncate font-medium text-foreground">{item.name}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{item.code}</span>
+                    <span>•</span>
+                    <span>{item.category}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 lg:col-span-8 lg:mt-0 lg:grid lg:grid-cols-8 lg:gap-4">
+            {/* Sucursal (solo en vista global) */}
+            {isGlobalView && (
+              <div className="lg:col-span-1 mt-2 lg:mt-0">
+                <Badge variant="outline" className="gap-1 text-xs">
+                  <MapPin className={cn(designTokens.icon.xs)} />
+                  {item.branchName.replace("Sucursal ", "")}
+                </Badge>
+              </div>
+            )}
+
+            <div className={cn("mt-3 flex flex-wrap items-center justify-between gap-2 lg:mt-0", isGlobalView ? "lg:col-span-8" : "lg:col-span-8", "lg:grid lg:gap-4", isGlobalView ? "lg:grid-cols-7" : "lg:grid-cols-8")}>
               {/* Stock */}
-              <div className="flex items-center gap-2 lg:col-span-2 lg:justify-center">
+              <div className={cn("flex items-center gap-2", isGlobalView ? "lg:col-span-2" : "lg:col-span-2", "lg:justify-center")}>
                 <span className="text-xs text-muted-foreground lg:hidden">Stock:</span>
                 <span
                   className={cn(
@@ -160,9 +106,9 @@ export function InventoryList() {
                     isOutOfStock ? "text-destructive" : isLowStock ? "text-warning" : "text-foreground",
                   )}
                 >
-                  {item.stockActual}
+                  {item.stock}
                 </span>
-                <span className="text-xs text-muted-foreground">/{item.stockMinimo}</span>
+                <span className="text-xs text-muted-foreground">/{item.minStock}</span>
                 {isOutOfStock ? (
                   <Badge variant="destructive" className="text-xs">
                     Sin Stock
@@ -173,40 +119,34 @@ export function InventoryList() {
               </div>
 
               {/* Price */}
-              <div className="flex items-center gap-1 lg:col-span-2 lg:justify-end">
+              <div className={cn("flex items-center gap-1", isGlobalView ? "lg:col-span-2" : "lg:col-span-2", "lg:justify-end")}>
                 <span className="text-xs text-muted-foreground lg:hidden">Precio:</span>
-                <span className="font-medium text-foreground">${item.precio.toLocaleString()}</span>
+                <span className="font-medium text-foreground">${item.price.toLocaleString()}</span>
               </div>
 
-              <div className="flex items-center gap-1 lg:col-span-2 lg:justify-center">
-                <span className="text-xs text-muted-foreground lg:hidden">Portal:</span>
-                {item.visiblePortal ? (
-                  <Badge variant="outline" className="gap-1 border-primary/30 bg-primary/10 text-primary">
-                    <Eye className="h-3 w-3" />
-                    <span className="hidden sm:inline">Visible</span>
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="gap-1 text-muted-foreground">
-                    <EyeOff className="h-3 w-3" />
-                    <span className="hidden sm:inline">Oculto</span>
-                  </Badge>
-                )}
+              {/* Portal visibility - oculto por ahora */}
+              <div className={cn("hidden items-center gap-1", isGlobalView ? "lg:col-span-1" : "lg:col-span-2", "lg:flex lg:justify-center")}>
+                <Badge variant="outline" className="gap-1 border-primary/30 bg-primary/10 text-primary">
+                  <Eye className="h-3 w-3" />
+                </Badge>
               </div>
 
               {/* Last Movement */}
-              <div className="flex items-center gap-1 lg:col-span-2 lg:justify-end">
+              <div className={cn("flex items-center gap-1", isGlobalView ? "lg:col-span-2" : "lg:col-span-2", "lg:justify-end")}>
                 <span className="text-xs text-muted-foreground lg:hidden">Mov:</span>
-                {item.ultimoMovimiento === "Hoy" ? (
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm text-muted-foreground">{item.ultimoMovimiento}</span>
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Hoy</span>
               </div>
             </div>
-          </div>
+          </button>
         )
       })}
+      <InventoryDetailModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        item={selected}
+        onSave={handleSave}
+      />
     </div>
   )
 }

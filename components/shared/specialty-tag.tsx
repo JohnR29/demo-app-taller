@@ -13,8 +13,8 @@ interface SpecialtyTagProps {
 
 export function SpecialtyTag({ label, icon: Icon, selected = false, onClick, size = "md" }: SpecialtyTagProps) {
   const sizeClasses = {
-    sm: "h-7 min-h-[32px] px-2 text-xs",
-    md: "h-9 min-h-[44px] px-3 text-sm",
+    sm: "h-6 min-h-[24px] px-1.5 text-xs",
+    md: "h-9 min-h-[36px] px-3 text-sm",
   }
 
   return (
@@ -31,7 +31,7 @@ export function SpecialtyTag({ label, icon: Icon, selected = false, onClick, siz
         !onClick && "cursor-default",
       )}
     >
-      {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+      {Icon && <Icon className="h-3 w-3 shrink-0" />}
       <span className="truncate">{label}</span>
     </button>
   )

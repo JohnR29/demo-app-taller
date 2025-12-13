@@ -137,7 +137,7 @@ export default function WorkshopDetailPage() {
   const handleBooking = () => {
     setBookingSuccess(true)
     setTimeout(() => {
-      router.push("/marketplace")
+      router.push("/portal/buscar-talleres")
     }, 2500)
   }
 

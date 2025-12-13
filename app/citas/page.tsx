@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Clock, User, Car, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { CalendarDays, Clock, User, Car, CheckCircle2, XCircle, AlertCircle, MapPin } from "lucide-react"
+import { useBranch } from "@/contexts/branch-context"
+import { mockAppointmentsWithBranches } from "@/lib/mock-data-branches"
+import { designTokens } from "@/lib/design-tokens"
+import { cn } from "@/lib/utils"
 
 const mockAppointments = [
   {
@@ -67,24 +71,30 @@ const mockAppointments = [
 
 export default function CitasPage() {
   const [view, setView] = useState<"calendar" | "list">("calendar")
+  const { selectedBranchId, currentBranch, isGlobalView } = useBranch()
+
+  // Filtrar citas por sucursal
+  const filteredAppointments = isGlobalView
+    ? mockAppointmentsWithBranches
+    : mockAppointmentsWithBranches.filter(a => a.branchId === selectedBranchId)
 
   const getEstadoBadge = (estado: string) => {
     switch (estado) {
-      case "confirmada":
+      case "confirmed":
         return (
           <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
             <CheckCircle2 className="mr-1 h-3 w-3" />
             Confirmada
           </Badge>
         )
-      case "pendiente":
+      case "pending":
         return (
           <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning">
             <AlertCircle className="mr-1 h-3 w-3" />
             Pendiente
           </Badge>
         )
-      case "cancelada":
+      case "cancelled":
         return (
           <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">
             <XCircle className="mr-1 h-3 w-3" />
@@ -99,7 +109,25 @@ export default function CitasPage() {
   return (
     <AppLayout>
       <div className="flex h-full flex-col">
-        <CalendarHeader />
+        <div className="border-b border-border bg-card px-3 py-3 sm:px-4">
+          <div className="mx-auto max-w-4xl space-y-1">
+            <div className="flex items-center gap-2">
+              <h1 className={cn(designTokens.typography.h1)}>Agenda de Citas</h1>
+              {!isGlobalView && currentBranch && (
+                <Badge variant="outline" className="gap-1">
+                  <MapPin className={cn(designTokens.icon.xs)} />
+                  {currentBranch.code}
+                </Badge>
+              )}
+              {isGlobalView && (
+                <Badge variant="secondary">Vista Consolidada</Badge>
+              )}
+            </div>
+            <p className={cn(designTokens.typography.body, "text-muted-foreground")}>
+              {filteredAppointments.length} citas en {isGlobalView ? 'todas las sucursales' : currentBranch?.name}
+            </p>
+          </div>
+        </div>
 
         <div className="border-b border-border bg-card px-3 py-2">
           <Tabs value={view} onValueChange={(v) => setView(v as "calendar" | "list")} className="w-full">
@@ -121,16 +149,22 @@ export default function CitasPage() {
             <WeeklyCalendar />
           ) : (
             <div className="mx-auto max-w-4xl space-y-3 p-3 pb-20 sm:p-4 md:pb-4">
-              {mockAppointments.map((cita) => (
+              {filteredAppointments.map((cita) => (
                 <Card key={cita.id} className="overflow-hidden">
                   <div className="space-y-3 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-bold text-foreground">{cita.cliente}</h3>
-                          {getEstadoBadge(cita.estado)}
+                          <h3 className="text-base font-bold text-foreground">{cita.clientName}</h3>
+                          {getEstadoBadge(cita.status)}
+                          {isGlobalView && (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <MapPin className={cn(designTokens.icon.xs)} />
+                              {cita.branchName.replace("Sucursal ", "")}
+                            </Badge>
+                          )}
                         </div>
-                        <p className="text-sm text-foreground">{cita.servicio}</p>
+                        <p className="text-sm text-foreground">{cita.service}</p>
                       </div>
                     </div>
 
@@ -138,31 +172,29 @@ export default function CitasPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="text-foreground">{cita.fecha}</span>
+                          <span className="text-foreground">{cita.date}</span>
                           <span className="text-muted-foreground">•</span>
-                          <span className="text-foreground">{cita.hora}</span>
+                          <span className="text-foreground">{cita.time}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="text-foreground">{cita.duracion} minutos</span>
+                          <span className="text-foreground">{cita.duration} minutos</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="text-primary">{cita.telefono}</span>
+                          <span className="text-primary">{cita.clientPhone}</span>
                         </div>
                       </div>
 
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <Car className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="text-foreground">
-                            {cita.vehiculo.marca} {cita.vehiculo.modelo} {cita.vehiculo.año}
-                          </span>
+                          <span className="text-foreground">{cita.vehicle}</span>
                         </div>
                         <Badge variant="outline" className="font-mono">
-                          {cita.vehiculo.patente}
+                          {cita.vehicleId}
                         </Badge>
-                        {cita.tieneRepuestos ? (
+                        {cita.hasParts ? (
                           <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
                             Repuestos Disponibles
                           </Badge>
@@ -174,10 +206,10 @@ export default function CitasPage() {
                       </div>
                     </div>
 
-                    {cita.notas && (
+                    {cita.notes && (
                       <div className="rounded-md bg-muted/50 p-3">
                         <p className="text-xs text-muted-foreground">Notas:</p>
-                        <p className="text-sm text-foreground">{cita.notas}</p>
+                        <p className="text-sm text-foreground">{cita.notes}</p>
                       </div>
                     )}
 
