@@ -24,7 +24,7 @@ Las migraciones deben ejecutarse en orden numérico. **No omitir ninguna migraci
 
 ### Fase 5: Sistema Auxiliar
 7. ✅ `007_create_audit_and_notifications.sql` - Auditoría y Notificaciones
-8. ✅ `008_create_marketplace.sql` - Calificaciones para Marketplace
+8. ✅ `008_create_workshop_ratings.sql` - Calificaciones de talleres (Portal Cliente)
 
 ### Fase 6: Funciones de Negocio
 9. ✅ `009_create_dashboard_functions.sql` - Funciones de KPIs para dashboard

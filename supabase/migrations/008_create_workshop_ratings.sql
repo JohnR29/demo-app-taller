@@ -1,6 +1,6 @@
 -- ============================================================================
--- Migration: 008 - Create Marketplace/Ratings
--- Description: Sistema de calificaciones para marketplace de talleres
+-- Migration: 008 - Create Workshop Ratings
+-- Description: Sistema de calificaciones para talleres (usado por Portal Cliente)
 -- Author: Backend Architect
 -- Date: 2025-12-14
 -- ============================================================================
@@ -9,7 +9,7 @@
 -- 1. CREATE TABLES
 -- ============================================================================
 
--- Workshop Ratings (Calificaciones para Marketplace)
+-- Workshop Ratings (Calificaciones para Portal Cliente)
 CREATE TABLE IF NOT EXISTS public.workshop_ratings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     branch_id UUID NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
@@ -309,7 +309,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 6. COMMENTS FOR DOCUMENTATION
 -- ============================================================================
 
-COMMENT ON TABLE public.workshop_ratings IS 'Calificaciones y reseñas de talleres - usado para marketplace público';
+COMMENT ON TABLE public.workshop_ratings IS 'Calificaciones y reseñas de talleres - usado por Portal Cliente (/portal/buscar-talleres)';
 
 COMMENT ON COLUMN public.workshop_ratings.rating IS 'Calificación de 1 a 5 estrellas';
 COMMENT ON COLUMN public.workshop_ratings.is_verified IS 'Indica si la calificación está verificada (ej: vinculada a una OT real)';

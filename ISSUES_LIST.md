@@ -214,16 +214,16 @@ Implementar sistema de auditoría y notificaciones.
 
 ---
 
-### Issue #9: Crear Migración - Marketplace/Ratings
+### Issue #9: Crear Migración - Workshop Ratings
 **Prioridad**: 🟡 Media  
-**Etiquetas**: `migration`, `database`, `marketplace`, `fase-5`  
+**Etiquetas**: `migration`, `database`, `portal`, `fase-5`  
 **Depende de**: #3
 
 **Descripción:**
-Crear sistema de calificaciones para marketplace de talleres.
+Crear sistema de calificaciones de talleres para Portal Cliente.
 
 **Criterios de Aceptación:**
-- [ ] Crear archivo `008_create_marketplace.sql`
+- [ ] Crear archivo `008_create_workshop_ratings.sql`
 - [ ] Crear tabla `workshop_ratings`
 - [ ] Implementar RLS (lectura pública, escritura restringida)
 - [ ] Crear función `add_workshop_rating()`
@@ -233,7 +233,7 @@ Crear sistema de calificaciones para marketplace de talleres.
 - [ ] Validar con datos de prueba
 
 **Archivos a crear:**
-- `supabase/migrations/008_create_marketplace.sql`
+- `supabase/migrations/008_create_workshop_ratings.sql`
 
 ---
 

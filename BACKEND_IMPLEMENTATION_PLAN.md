@@ -59,17 +59,12 @@ Implementar completamente el backend de la aplicación TallerMS utilizando Supab
    - Vista global vs. vista por sucursal
 
 9. **Portal Cliente** (`/portal`)
-   - Búsqueda de talleres cercanos
+   - Búsqueda de talleres cercanos (con calificaciones y reseñas)
    - Consulta de disponibilidad de repuestos
    - Agendar citas públicas
    - Historial de vehículo
 
-10. **Marketplace** (`/marketplace`)
-    - Búsqueda de talleres
-    - Filtros por distancia y especialidad
-    - Calificaciones y reseñas
-
-11. **Configuración** (`/configuracion`)
+10. **Configuración** (`/configuracion`)
     - Datos de la empresa
     - Notificaciones
     - Preferencias
@@ -327,7 +322,7 @@ notifications
   - created_at (timestamptz)
 ```
 
-#### 14. Workshop Ratings (Calificaciones - Marketplace)
+#### 14. Workshop Ratings (Calificaciones para Portal Cliente)
 ```sql
 workshop_ratings
   - id (uuid, PK)
@@ -510,10 +505,10 @@ CREATE INDEX idx_vehicles_plate ON vehicles(license_plate);
 2. Triggers de auditoría
 3. Sistema de notificaciones
 
-### Fase 8: Marketplace (Día 12)
-1. Tabla workshop_ratings
+### Fase 8: Workshop Ratings (Día 12)
+1. Tabla workshop_ratings (para Portal Cliente)
 2. Funciones de geolocalización
-3. API pública para búsqueda
+3. Sistema de calificaciones público
 
 ### Fase 9: Testing y Optimización (Días 13-14)
 1. Testing de RLS
