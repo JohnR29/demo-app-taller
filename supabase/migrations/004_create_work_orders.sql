@@ -47,13 +47,8 @@ CREATE TABLE IF NOT EXISTS public.work_orders (
     CONSTRAINT work_orders_order_number_unique UNIQUE (order_number),
     CONSTRAINT work_orders_costs_check CHECK (estimated_cost >= 0 AND labor_cost >= 0 AND parts_cost >= 0),
     CONSTRAINT work_orders_final_cost_check CHECK (final_cost IS NULL OR final_cost >= 0),
-    CONSTRAINT work_orders_completion_date_check CHECK (completion_date IS NULL OR completion_date >= start_date),
-    CONSTRAINT work_orders_mechanic_role_check CHECK (
-        assigned_mechanic_id IS NULL OR 
-        assigned_mechanic_id IN (
-            SELECT id FROM public.users WHERE role IN ('mechanic', 'manager', 'admin')
-        )
-    )
+    CONSTRAINT work_orders_completion_date_check CHECK (completion_date IS NULL OR completion_date >= start_date)
+    -- Note: Mechanic role validation is handled by trigger (see validate_work_order_mechanic_role)
 );
 
 -- Work Order Parts (Repuestos de OT)
@@ -95,6 +90,30 @@ CREATE INDEX idx_work_order_parts_inventory ON public.work_order_parts(inventory
 -- ============================================================================
 -- 4. CREATE TRIGGERS
 -- ============================================================================
+
+-- Trigger to validate mechanic role
+CREATE OR REPLACE FUNCTION public.validate_work_order_mechanic_role()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If assigned_mechanic_id is set, validate the role
+    IF NEW.assigned_mechanic_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM public.users 
+            WHERE id = NEW.assigned_mechanic_id 
+            AND role IN ('mechanic', 'manager', 'admin')
+        ) THEN
+            RAISE EXCEPTION 'Assigned mechanic must have role: mechanic, manager, or admin';
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_mechanic_role_on_insert_update
+    BEFORE INSERT OR UPDATE OF assigned_mechanic_id ON public.work_orders
+    FOR EACH ROW
+    EXECUTE FUNCTION public.validate_work_order_mechanic_role();
 
 CREATE TRIGGER update_work_orders_updated_at
     BEFORE UPDATE ON public.work_orders
