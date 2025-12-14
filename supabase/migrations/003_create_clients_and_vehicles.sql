@@ -60,9 +60,13 @@ CREATE TABLE IF NOT EXISTS public.clients (
 );
 
 -- Vehicles (Vehículos)
+-- Note: organization_id is denormalized from clients for performance and to enable 
+-- efficient unique constraints on license_plate per organization. 
+-- It's kept in sync automatically via trigger.
 CREATE TABLE IF NOT EXISTS public.vehicles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     license_plate TEXT NOT NULL,
     brand TEXT NOT NULL,
     model TEXT NOT NULL,
@@ -102,28 +106,40 @@ CREATE INDEX idx_clients_full_name ON public.clients(first_name, last_name);
 
 -- Vehicles indexes
 CREATE INDEX idx_vehicles_client ON public.vehicles(client_id);
+CREATE INDEX idx_vehicles_organization ON public.vehicles(organization_id);
 CREATE INDEX idx_vehicles_license_plate ON public.vehicles(license_plate);
 CREATE INDEX idx_vehicles_brand_model ON public.vehicles(brand, model);
 CREATE INDEX idx_vehicles_is_active ON public.vehicles(is_active) WHERE is_active = true;
 CREATE INDEX idx_vehicles_next_service ON public.vehicles(next_service_date) WHERE next_service_date IS NOT NULL;
 
--- Helper function to get organization_id from a client_id (for index)
-CREATE OR REPLACE FUNCTION public.get_organization_from_client(p_client_id UUID)
-RETURNS UUID AS $$
-    SELECT organization_id
-    FROM public.clients
-    WHERE id = p_client_id
-$$ LANGUAGE sql STABLE;
-
 -- Unique constraint for license plate per organization (not globally)
 -- This ensures the same license plate can exist in different organizations
 CREATE UNIQUE INDEX idx_vehicles_license_plate_per_org 
-    ON public.vehicles(license_plate, get_organization_from_client(client_id)) 
+    ON public.vehicles(license_plate, organization_id) 
     WHERE is_active = true;
 
 -- ============================================================================
 -- 4. CREATE TRIGGERS
 -- ============================================================================
+
+-- Function to sync vehicle organization_id from client
+CREATE OR REPLACE FUNCTION public.sync_vehicle_organization()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Get organization_id from the client
+    SELECT organization_id INTO NEW.organization_id
+    FROM public.clients
+    WHERE id = NEW.client_id;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to sync organization_id when vehicle is inserted or client_id changes
+CREATE TRIGGER sync_vehicle_organization_on_insert_update
+    BEFORE INSERT OR UPDATE OF client_id ON public.vehicles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.sync_vehicle_organization();
 
 CREATE TRIGGER update_clients_updated_at
     BEFORE UPDATE ON public.clients
@@ -204,14 +220,10 @@ CREATE POLICY "Users can view vehicles in their organization"
     ON public.vehicles
     FOR SELECT
     USING (
-        client_id IN (
-            SELECT id 
-            FROM public.clients 
-            WHERE organization_id IN (
-                SELECT organization_id 
-                FROM public.users 
-                WHERE id = auth.uid()
-            )
+        organization_id IN (
+            SELECT organization_id 
+            FROM public.users 
+            WHERE id = auth.uid()
         )
     );
 
@@ -220,15 +232,11 @@ CREATE POLICY "Staff can create vehicles"
     ON public.vehicles
     FOR INSERT
     WITH CHECK (
-        client_id IN (
-            SELECT id 
-            FROM public.clients 
-            WHERE organization_id IN (
-                SELECT organization_id 
-                FROM public.users 
-                WHERE id = auth.uid() 
-                AND role IN ('admin', 'manager', 'receptionist', 'mechanic')
-            )
+        organization_id IN (
+            SELECT organization_id 
+            FROM public.users 
+            WHERE id = auth.uid() 
+            AND role IN ('admin', 'manager', 'receptionist', 'mechanic')
         )
     );
 
@@ -237,14 +245,11 @@ CREATE POLICY "Staff can update vehicles"
     ON public.vehicles
     FOR UPDATE
     USING (
-        client_id IN (
-            SELECT id 
-            FROM public.clients 
-            WHERE organization_id IN (
-                SELECT organization_id 
-                FROM public.users 
-                WHERE id = auth.uid() 
-                AND role IN ('admin', 'manager', 'receptionist', 'mechanic')
+        organization_id IN (
+            SELECT organization_id 
+            FROM public.users 
+            WHERE id = auth.uid() 
+            AND role IN ('admin', 'manager', 'receptionist', 'mechanic')
             )
         )
     );
@@ -254,15 +259,11 @@ CREATE POLICY "Admins can delete vehicles"
     ON public.vehicles
     FOR DELETE
     USING (
-        client_id IN (
-            SELECT id 
-            FROM public.clients 
-            WHERE organization_id IN (
-                SELECT organization_id 
-                FROM public.users 
-                WHERE id = auth.uid() 
-                AND role = 'admin'
-            )
+        organization_id IN (
+            SELECT organization_id 
+            FROM public.users 
+            WHERE id = auth.uid() 
+            AND role = 'admin'
         )
     );
 
