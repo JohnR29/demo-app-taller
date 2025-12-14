@@ -107,13 +107,19 @@ CREATE INDEX idx_vehicles_brand_model ON public.vehicles(brand, model);
 CREATE INDEX idx_vehicles_is_active ON public.vehicles(is_active) WHERE is_active = true;
 CREATE INDEX idx_vehicles_next_service ON public.vehicles(next_service_date) WHERE next_service_date IS NOT NULL;
 
+-- Helper function to get organization_id from a client_id (for index)
+CREATE OR REPLACE FUNCTION public.get_organization_from_client(p_client_id UUID)
+RETURNS UUID AS $$
+    SELECT organization_id
+    FROM public.clients
+    WHERE id = p_client_id
+$$ LANGUAGE sql STABLE;
+
 -- Unique constraint for license plate per organization (not globally)
 -- This ensures the same license plate can exist in different organizations
-CREATE UNIQUE INDEX idx_vehicles_license_plate_per_org ON public.vehicles(license_plate, (
-    SELECT organization_id 
-    FROM public.clients 
-    WHERE clients.id = vehicles.client_id
-)) WHERE is_active = true;
+CREATE UNIQUE INDEX idx_vehicles_license_plate_per_org 
+    ON public.vehicles(license_plate, get_organization_from_client(client_id)) 
+    WHERE is_active = true;
 
 -- ============================================================================
 -- 4. CREATE TRIGGERS
