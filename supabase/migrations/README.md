@@ -15,24 +15,24 @@ Las migraciones deben ejecutarse en orden numérico. **No omitir ninguna migraci
 ### Fase 2: Gestión de Clientes
 3. ✅ `003_create_clients_and_vehicles.sql` - Clientes y Vehículos
 
-### Fase 3: Operaciones (Pendiente)
-4. `004_create_work_orders.sql` - Órdenes de Trabajo
-5. `005_create_appointments.sql` - Citas
+### Fase 3: Operaciones
+4. ✅ `004_create_work_orders.sql` - Órdenes de Trabajo
+5. ✅ `005_create_appointments.sql` - Citas
 
-### Fase 4: Inventario (Pendiente)
-6. `006_create_inventory.sql` - Inventario y Movimientos
+### Fase 4: Inventario
+6. ✅ `006_create_inventory.sql` - Inventario y Movimientos
 
-### Fase 5: Sistema Auxiliar (Pendiente)
-7. `007_create_audit_and_notifications.sql` - Auditoría y Notificaciones
-8. `008_create_marketplace.sql` - Calificaciones para Marketplace
+### Fase 5: Sistema Auxiliar
+7. ✅ `007_create_audit_and_notifications.sql` - Auditoría y Notificaciones
+8. ✅ `008_create_marketplace.sql` - Calificaciones para Marketplace
 
-### Fase 6: Funciones de Negocio (Pendiente)
-9. `009_create_business_functions.sql` - Funciones principales de negocio
-10. `010_create_triggers.sql` - Triggers automáticos
+### Fase 6: Funciones de Negocio
+9. ✅ `009_create_dashboard_functions.sql` - Funciones de KPIs para dashboard
+10. ✅ `010_create_report_functions.sql` - Funciones de reportería
+11. ✅ `011_create_triggers.sql` - Triggers automáticos
 
-### Fase 7: Optimización (Pendiente)
-11. `011_create_indexes.sql` - Índices adicionales
-12. `012_create_views.sql` - Vistas materializadas
+### Fase 7: Optimización
+12. ✅ `012_create_additional_indexes.sql` - Índices adicionales de performance
 
 ## 🚀 Cómo Ejecutar
 
