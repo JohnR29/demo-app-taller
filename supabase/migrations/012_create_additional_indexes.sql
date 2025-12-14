@@ -87,10 +87,10 @@ CREATE INDEX IF NOT EXISTS idx_appointments_pending_by_date
     ON public.appointments(date, time) 
     WHERE status = 'pending';
 
--- Confirmed appointments needing reminders
+-- Confirmed appointments needing reminders (removed date >= CURRENT_DATE predicate - not IMMUTABLE)
 CREATE INDEX IF NOT EXISTS idx_appointments_reminder_pending 
     ON public.appointments(date, branch_id) 
-    WHERE status = 'confirmed' AND reminder_sent = false AND date >= CURRENT_DATE;
+    WHERE status = 'confirmed' AND reminder_sent = false;
 
 -- Out of stock items
 CREATE INDEX IF NOT EXISTS idx_inventory_out_of_stock 
